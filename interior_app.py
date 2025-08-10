@@ -143,16 +143,13 @@ st.markdown("""
 def load_saved_model_for_generation(model_path, state_dict=None, device=None):
     """Load the saved fine-tuned model for text-to-image generation"""
     if device is None:
-        device = get_device()  # Use our proper device detection
-
-    # Load base model
+        device = get_device() 
     model_id = "bhoomikagp/sd2-interior-model-version2"
     pipe = StableDiffusionPipeline.from_pretrained(
         model_id, 
         torch_dtype=torch.float16 if device.type == "cuda" else torch.float32
     )
 
-    # Use provided state_dict or load from file
     if state_dict is None:
         st.info(f"Loading state dictionary from {model_path}...")
         try:
@@ -162,7 +159,7 @@ def load_saved_model_for_generation(model_path, state_dict=None, device=None):
             st.warning("Trying to load model with default settings...")
             state_dict = torch.load(model_path, map_location=device)
     
-    # Load weights
+ 
     if "unet" in state_dict:
         pipe.unet.load_state_dict(state_dict["unet"], strict=False)
     if "vae" in state_dict:
@@ -174,7 +171,7 @@ def load_saved_model_for_generation(model_path, state_dict=None, device=None):
     else:
         pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
 
-    # Move pipeline to device
+   
     pipe = pipe.to(device)
     st.success(f"Generation model loaded successfully to {device}")
 
@@ -183,16 +180,14 @@ def load_saved_model_for_generation(model_path, state_dict=None, device=None):
 def load_saved_model_for_img2img(model_path, state_dict=None, device=None):
     """Load the saved fine-tuned model for image-to-image generation"""
     if device is None:
-        device = get_device()  # Use our proper device detection
-
-    # Load base model
+        device = get_device()  
     model_id = "bhoomikagp/sd2-interior-model-version2"
     pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
         model_id,
         torch_dtype=torch.float16 if device.type == "cuda" else torch.float32
     )
 
-    # Use provided state_dict or load from file
+
     if state_dict is None:
         st.info(f"Loading state dictionary from {model_path}...")
         try:
@@ -202,7 +197,6 @@ def load_saved_model_for_img2img(model_path, state_dict=None, device=None):
             st.warning("Trying to load model with default settings...")
             state_dict = torch.load(model_path, map_location=device)
     
-    # Load weights
     if "unet" in state_dict:
         pipe.unet.load_state_dict(state_dict["unet"], strict=False)
     if "vae" in state_dict:
@@ -214,7 +208,7 @@ def load_saved_model_for_img2img(model_path, state_dict=None, device=None):
     else:
         pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
 
-    # Move pipeline to device
+   
     pipe = pipe.to(device)
     st.success(f"Img2img model loaded successfully to {device}")
 
@@ -229,15 +223,15 @@ def load_models(model_path):
         status_text.text("Checking model path... 🔍")
         progress_bar.progress(10)
         
-        # Verify file exists
+        
         if not os.path.isfile(model_path):
             st.error(f"Error: '{model_path}' is not a valid file. Please provide the correct path.")
             return None, None, f"Error: '{model_path}' is not a valid file. Please provide the correct path."
         
-        # Load state_dict once
+       
         status_text.text("Loading model state dictionary... 📂")
         progress_bar.progress(15)
-        current_device = get_device()  # Get current device
+        current_device = get_device()  
         try:
             state_dict = torch.load(model_path, map_location=current_device)
             st.info("Model weights loaded successfully")
@@ -246,7 +240,7 @@ def load_models(model_path):
             st.warning("Trying to load model with default settings...")
             state_dict = torch.load(model_path, map_location=current_device)
         
-        # Load generation pipeline
+     
         status_text.text("Loading generation model... 🎨")
         progress_bar.progress(25)
         generation_pipe = load_saved_model_for_generation(model_path, state_dict=state_dict)
@@ -255,7 +249,7 @@ def load_models(model_path):
             st.error("Failed to load generation pipeline")
             return None, None, "Error: Failed to load generation pipeline"
         
-        # Load editing pipeline
+       
         status_text.text("Loading editing model... ✂️")
         progress_bar.progress(75)
         editing_pipe = load_saved_model_for_img2img(model_path, state_dict=state_dict)
@@ -305,7 +299,7 @@ def preprocess_image(image):
 def generate_interior(prompt, guidance_scale, num_inference_steps, generation_pipe):
     """Generate a new interior based on the prompt"""
     
-    # Make sure model is loaded
+    
     if generation_pipe is None:
         return None, "Model not loaded. Please load the model first."
     
@@ -313,7 +307,7 @@ def generate_interior(prompt, guidance_scale, num_inference_steps, generation_pi
     st.info(f"Parameters: Guidance Scale={guidance_scale}, Steps={num_inference_steps}")
     
     try:
-        # Create a progress bar
+        
         progress_bar = st.progress(0)
         status_text = st.empty()
         
@@ -357,7 +351,7 @@ def generate_interior(prompt, guidance_scale, num_inference_steps, generation_pi
 def edit_interior(image, edit_prompt, strength, guidance_scale, num_inference_steps, editing_pipe):
     """Edit an existing interior image based on the prompt"""
     
-    # Make sure model is loaded
+   
     if editing_pipe is None:
         return None, "Model not loaded. Please load the model first."
     
@@ -365,7 +359,7 @@ def edit_interior(image, edit_prompt, strength, guidance_scale, num_inference_st
         return None, "No image provided. Please upload an image first."
     
     try:
-        # Preprocess image
+        
         init_image = preprocess_image(image)
         
         # Add a prefix to ensure we maintain the interior context
