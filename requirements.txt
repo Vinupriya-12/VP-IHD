@@ -1,0 +1,9 @@
+torch
+torchvision
+diffusers
+transformers
+streamlit
+pillow
+numpy
+requests
+gdown
